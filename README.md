@@ -89,3 +89,29 @@ Create a simple grid consisting of two eqaul vertical parts like this:
 ### Key takeaway
 
 Grid is an excellent way to lay out a small number of items on the screen. Verify your design using simple techniques before proceeding with details.
+
+## Create view for closest birthday
+
+Create a `ContentView` with XAML which will contain the closest birthday.
+
+`ClosestBirthdayView`:
+
+```XAML
+<ContentView.Content>
+    <StackLayout>
+        <Label HorizontalTextAlignment="Center" FontSize="24" VerticalOptions="Start" Margin="0,30,0,0" Text="Birthday Boi" />
+        <Label HorizontalTextAlignment="Center" FontSize="32" VerticalOptions="CenterAndExpand" Text="35 years" />
+        <Label HorizontalTextAlignment="Center" FontSize="24" VerticalOptions="End" Margin="0,0,0,30" Text="6.2.1984" />
+    </StackLayout>
+</ContentView.Content>
+```
+
+```XAML
+xmlns:views="clr-namespace:Birthdays.Views"
+...
+<views:ClosestBirthdayView />
+```
+
+### Key takeway
+
+Create small components to build up your UI. These must be referenced in XAML using the correct namespace. Know and utilize different layout options. 
