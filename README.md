@@ -11,7 +11,7 @@ Know the difference between the different projects and understand how this can r
 
 ## Show mock-up of the app to be created
 
-![Mock-up of the finished product](mockup.png)
+![Mock-up of the finished product](mockup.png) <!-- .element height="677" width="376" -->
 
 ### Key takeaway
 
