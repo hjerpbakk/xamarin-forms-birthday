@@ -1,19 +1,10 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <ContentView xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="Birthdays.Views.BirthdaysView">
     <ContentView.Content>
-        <ListView>
-            <ListView.ItemsSource>
-                <x:Array Type="{x:Type x:String}">
-                    <x:String>Paul</x:String>
-                    <x:String>Leto</x:String>
-                    <x:String>Vladimir</x:String>
-                    <x:String>Jessica</x:String>
-                    <x:String>Duncan</x:String>
-                </x:Array>
-            </ListView.ItemsSource>
+        <ListView ItemsSource="{Binding FutureBirthdays}">
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <TextCell Text="{Binding}" Detail="Bursdag" />
+                    <TextCell Text="{Binding Name}" Detail="{Binding Birthday}" />
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>

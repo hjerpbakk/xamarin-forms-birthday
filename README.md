@@ -244,3 +244,52 @@ Run the app and success means it looks *kind-of the same*!
 ### Key takeaway
 
 **MVVM** and **data binding** are the two most important aspects of any Xamarin Forms app. They enable decoupling, easy state managment and makes the app testable! If you remember only two things, remember these patterns.
+
+## Bind the list too
+
+Add an `ObserveableCollection` to `BirthdaysViewModel` and populate it with dummy data:
+
+```csharp
+using System;
+using System.Collections.ObjectModel;
+using Birthdays.Models;
+
+namespace Birthdays.ViewModels {
+    public class BirthdaysViewModel {
+        public BirthdaysViewModel() {
+            ClosestBirthDay = new Person("Birthday Boi", new DateTime(1984, 2, 6));
+            FutureBirthdays = new ObservableCollection<Person> {
+                new Person("Paul", new DateTime(1983, 3, 7)),
+                new Person("Leto", new DateTime(1982, 4, 8)),
+                new Person("Vladimir", new DateTime(1981, 5, 9)),
+                new Person("Jessica", new DateTime(1980, 6, 10)),
+                new Person("Duncan", new DateTime(1979, 7, 11))
+            };
+        }
+
+        public Person ClosestBirthDay { get; }
+        public ObservableCollection<Person> FutureBirthdays { get; }
+    }
+}
+```
+
+Update the `BirthdaysView` to use bindings fitting the ViewModel:
+
+```xaml
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentView xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="Birthdays.Views.BirthdaysView">
+    <ContentView.Content>
+        <ListView ItemsSource="{Binding FutureBirthdays}">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <TextCell Text="{Binding Name}" Detail="{Binding Birthday}" />
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+    </ContentView.Content>
+</ContentView>
+```
+
+### Key takeaway
+
+**MVVM** and **data binding** are the two most important aspects of any Xamarin Forms app. They enable decoupling, easy state managment and makes the app testable! If you remember only two things, remember these patterns.
