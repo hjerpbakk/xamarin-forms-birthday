@@ -2,9 +2,9 @@
 <ContentView xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="Birthdays.Views.ClosestBirthdayView">
     <ContentView.Content>
         <StackLayout>
-            <Label HorizontalTextAlignment="Center" FontSize="24" VerticalOptions="Start" Margin="0,30,0,0" Text="Birthday Boi" />
-            <Label HorizontalTextAlignment="Center" FontSize="32" VerticalOptions="CenterAndExpand" Text="35 years" />
-            <Label HorizontalTextAlignment="Center" FontSize="24" VerticalOptions="End" Margin="0,0,0,30" Text="6.2.1984" />
+            <Label Text="{Binding ClosestBirthDay.Name}" HorizontalTextAlignment="Center" FontSize="24" VerticalOptions="Start" Margin="0,30,0,0" />
+            <Label Text="{Binding ClosestBirthDay.Age}" HorizontalTextAlignment="Center" FontSize="32" VerticalOptions="CenterAndExpand" />
+            <Label Text="{Binding ClosestBirthDay.Birthday}" HorizontalTextAlignment="Center" FontSize="24" VerticalOptions="End" Margin="0,0,0,30" />
         </StackLayout>
     </ContentView.Content>
 </ContentView>

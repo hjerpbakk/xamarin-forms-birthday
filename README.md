@@ -164,3 +164,83 @@ This will make the navigation bar be less ugly, at least on iOS.
 ### Key takeaway
 
 Global styles are necessary and can be specified in `App.xaml`.
+
+## Use MVVM and DataBinding to populate the UI
+
+Add a `Models` folder and the class `Person`:
+
+```csharp
+using System;
+
+namespace Birthdays.Models {
+    public class Person {
+        public Person(string name, DateTime date) {
+            Name = name;
+            Birthday = date.ToShortDateString();
+            Age = GetAge(date);
+        }
+
+        public string Name { get; }
+        public string Birthday { get; }
+        public uint Age { get; }
+
+        static uint GetAge(DateTime birthDate) {
+            var now = DateTime.Now;
+            int age = now.Year - birthDate.Year;
+            if (now.Month < birthDate.Month || (now.Month == birthDate.Month && now.Day < birthDate.Day)) {
+                age--;
+            }
+
+            return (uint)age;
+        }
+    }
+}
+
+```
+
+Add a `ViewModels` folder and the class `BirthdaysViewModel`:
+
+```csharp
+using System;
+using Birthdays.Models;
+
+namespace Birthdays.ViewModels {
+    public class BirthdaysViewModel {
+        public BirthdaysViewModel() {
+            ClosestBirthDay = new Person("Birthday Boi", new DateTime(1984, 2, 6));
+        }
+
+        public Person ClosestBirthDay { get; }
+    }
+}
+```
+
+Update `ClosestBirthdayView` to bind to a people object:
+
+```xaml
+<Label Text="{Binding ClosestBirthDay.Name}" ...
+<Label Text="{Binding ClosestBirthDay.Age}" ...
+<Label Text="{Binding ClosestBirthDay.Birthday}" ...
+```
+
+And set the `BindingContext` of `BirthdaysPage.xaml.cs`:
+
+```csharp
+using Birthdays.ViewModels;
+using Xamarin.Forms;
+
+namespace Birthdays.Views {
+    public partial class BirthdaysPage : ContentPage {
+        public BirthdaysPage() {
+            InitializeComponent();
+            BindingContext = new BirthdaysViewModel();
+        }
+    }
+}
+```
+
+Run the app and success means it looks *kind-of the same*!
+
+### Key takeaway
+
+**MVVM** and **data binding** are the two most important aspects of any Xamarin Forms app. They enable decoupling, easy state managment and makes the app testable! If you remember only two things, remember these patterns.
