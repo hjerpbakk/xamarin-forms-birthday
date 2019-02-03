@@ -92,9 +92,7 @@ Grid is an excellent way to lay out a small number of items on the screen. Verif
 
 ## Create view for closest birthday
 
-Create a `ContentView` with XAML which will contain the closest birthday.
-
-`ClosestBirthdayView`:
+Create a `ContentView` with XAML which will contain the closest birthday, `ClosestBirthdayView`:
 
 ```XAML
 <ContentView.Content>
@@ -114,4 +112,35 @@ xmlns:views="clr-namespace:Birthdays.Views"
 
 ### Key takeway
 
-Create small components to build up your UI. These must be referenced in XAML using the correct namespace. Know and utilize different layout options. 
+Create small components to build up your UI. These must be referenced in XAML using the correct namespace. Know and utilize different layout options.
+
+## Create all birthdays view
+
+Create a `ContentView` with XAML which will show a list of all birthdays, `BirthdaysView`:
+
+```XAML
+<ContentView xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="Birthdays.Views.BirthdaysView">
+    <ContentView.Content>
+        <ListView>
+            <ListView.ItemsSource>
+                <x:Array Type="{x:Type x:String}">
+                    <x:String>Paul</x:String>
+                    <x:String>Leto</x:String>
+                    <x:String>Vladimir</x:String>
+                    <x:String>Jessica</x:String>
+                    <x:String>Duncan</x:String>
+                </x:Array>
+            </ListView.ItemsSource>
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <TextCell Text="{Binding}" Detail="Bursdag" />
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+    </ContentView.Content>
+</ContentView>
+```
+
+### Key takeaway
+
+A `ListView` is useful to show lists. `DataTemplates` defines the UI of items in lists or tables. `Bindings` sets vales in the UI based on other data.

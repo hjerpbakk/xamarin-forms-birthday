@@ -7,7 +7,7 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <views:ClosestBirthdayView />
-            <ContentView Grid.Row="1" BackgroundColor="Green" />
+            <views:BirthdaysView Grid.Row="1" />
         </Grid>
     </ContentPage.Content>
 </ContentPage>
