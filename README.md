@@ -60,3 +60,11 @@ Build the app and run it.
 ### Key takeaway
 
 Creating a skeleton of the app first makes it easier to add inn details later. XAML is used to describe the user interface in Xamarin Forms.
+
+## Add titles to the new pages
+
+Set the property `Title` of the two new `ContentPages`.
+
+### Key takeaway
+
+Navigation bars inherit the title of their active child. Each tab has its own navigation stack.
