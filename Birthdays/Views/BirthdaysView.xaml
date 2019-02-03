@@ -4,16 +4,16 @@
         <ListView>
             <ListView.ItemsSource>
                 <x:Array Type="{x:Type x:String}">
-                    <x:String>1</x:String>
-                    <x:String>2</x:String>
-                    <x:String>3</x:String>
-                    <x:String>4</x:String>
-                    <x:String>5</x:String>
+                    <x:String>Paul</x:String>
+                    <x:String>Leto</x:String>
+                    <x:String>Vladimir</x:String>
+                    <x:String>Jessica</x:String>
+                    <x:String>Duncan</x:String>
                 </x:Array>
             </ListView.ItemsSource>
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <TextCell Text="Navn på Person" Detail="Bursdag" />
+                    <TextCell Text="{Binding}" Detail="Bursdag" />
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
