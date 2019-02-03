@@ -11,7 +11,7 @@ Know the difference between the different projects and understand how this can r
 
 ## Show mock-up of the app to be created
 
-![]()
+![Mock-up of the finished product](mockup.png)
 
 ### Key takeaway
 
@@ -144,3 +144,23 @@ Create a `ContentView` with XAML which will show a list of all birthdays, `Birth
 ### Key takeaway
 
 A `ListView` is useful to show lists. `DataTemplates` defines the UI of items in lists or tables. `Bindings` sets vales in the UI based on other data.
+
+## A short stylistic detour
+
+Replace `Application.Resources` in `App.xaml` with:
+
+```XAML
+<Application.Resources>
+    <ResourceDictionary>
+        <Style TargetType="NavigationPage">
+            <Setter Property="BarBackgroundColor" Value="#F9F9F9" />
+        </Style>
+    </ResourceDictionary>
+</Application.Resources>
+```
+
+This will make the navigation bar be less ugly, at least on iOS.
+
+### Key takeaway
+
+Global styles are necessary and can be specified in `App.xaml`.
