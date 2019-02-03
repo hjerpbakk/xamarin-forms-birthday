@@ -68,3 +68,24 @@ Set the property `Title` of the two new `ContentPages`.
 ### Key takeaway
 
 Navigation bars inherit the title of their active child. Each tab has its own navigation stack.
+
+## Create a Grid for the Birthdays page
+
+Create a simple grid consisting of two eqaul vertical parts like this:
+
+```XAML
+<ContentPage.Content>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <ContentView BackgroundColor="Red" />
+        <ContentView Grid.Row="1" BackgroundColor="Green" />
+    </Grid>
+</ContentPage.Content>
+```
+
+### Key takeaway
+
+Grid is an excellent way to lay out a small number of items on the screen. Verify your design using simple techniques before proceeding with details.
