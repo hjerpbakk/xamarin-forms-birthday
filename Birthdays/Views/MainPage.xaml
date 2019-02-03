@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<TabbedPage xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:views="clr-namespace:Birthdays.Views" x:Class="Birthdays.Views.MainPage">
+    <TabbedPage.Children>
+        <NavigationPage Title="Birthdays">
+            <x:Arguments>
+                <views:BirthdaysPage />
+            </x:Arguments>
+        </NavigationPage>
+        <NavigationPage Title="Settings">
+            <x:Arguments>
+                <views:SettingsPage />
+            </x:Arguments>
+        </NavigationPage>
+    </TabbedPage.Children>
+</TabbedPage>
