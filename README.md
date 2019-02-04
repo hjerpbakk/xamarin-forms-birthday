@@ -406,11 +406,11 @@ namespace Birthdays.Views {
 }
 ```
 
-And no data should be shown on screen.
+And no data should be shown on screen. One piece is cleary missing from the data binding puzzle.
 
 ### Key takeaway
 
-`JSON` and `HTTP` is the universal language of online services. `Postman` can be used to explore APIs. `HttpClient` the C# way of making HTTP-request, `Newtonsoft.Json` is the most used JSON-parser. `async` and `await` is the best thing since slices bread. `async void` is an anti-pattern and usage should be kept to a minimum. One piece is cleary missing from the data binding puzzle.
+`JSON` and `HTTP` is the universal language of online services. `Postman` can be used to explore APIs. `HttpClient` the C# way of making HTTP-request, `Newtonsoft.Json` is the most used JSON-parser. `async` and `await` is the best thing since slices bread. `async void` is an anti-pattern and usage should be kept to a minimum. And sometimes you need to tweak your model to incorporate the real world.
 
 ## Proper data binding
 
