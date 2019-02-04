@@ -293,3 +293,122 @@ Update the `BirthdaysView` to use bindings fitting the ViewModel:
 ### Key takeaway
 
 **MVVM** and **data binding** are the two most important aspects of any Xamarin Forms app. They enable decoupling, easy state managment and makes the app testable! If you remember only two things, remember these patterns.
+
+## Using a service to populate the app
+
+Add the `NuGet-package` `Newtonsoft.Json` to the `Birthdays` project.
+
+Create a folder called `Services` and add the class `BirthdayService`:
+
+```csharp
+using System;
+using System.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
+using Birthdays.Models;
+using Newtonsoft.Json;
+
+namespace Birthdays.Services {
+    public class BirthdayService {
+        public async Task<Person[]> GetBirthdays() {
+            using (var httpClient = new HttpClient {
+                BaseAddress = new Uri("http://vt-ekvtool1:8081")
+            }) {
+                var json = await httpClient.GetStringAsync("api/birthday/trondheim");
+                var birthdays = JsonConvert.DeserializeObject<Birthdays>(json);
+                var persons = birthdays.TodaysBirthdays.Concat(birthdays.NextBirthdays).ToArray();
+                return persons;
+            }
+        }
+
+        class Birthdays {
+            public Person[] TodaysBirthdays { get; set; }
+            public Person[] NextBirthdays { get; set; }
+        }
+    }
+}
+```
+
+Since the service doesn't use HTTPS, iOS at least will block the connection. We need to enable unsecure communication to this service. Open `Info.plist` from the `Birthdays.iOS` project and add the following:
+
+```XML
+<dict>
+    <key>NSExceptionDomains</key>
+    <dict>
+        <key>vt-ekvtool1</key>
+        <dict>
+            <key>NSIncludesSubdomains</key>
+            <true/>
+            <key>NSExceptionAllowsInsecureHTTPLoads</key>
+            <true/>
+            <key>NSExceptionMinimumTLSVersion</key>
+            <string>TLSv1.2</string>
+        </dict>
+    </dict>
+</dict>
+```
+
+Use the service in `BirthdaysViewModel`:
+
+```csharp
+using System;
+using System.Linq;
+using System.Collections.ObjectModel;
+using System.Threading.Tasks;
+using Birthdays.Models;
+using Birthdays.Services;
+
+namespace Birthdays.ViewModels {
+    public class BirthdaysViewModel {
+        readonly BirthdayService birthdayService;
+
+        public BirthdaysViewModel() {
+            birthdayService = new BirthdayService();
+        }
+
+        public Person ClosestBirthDay { get; private set; }
+        public ObservableCollection<Person> FutureBirthdays { get; private set; }
+
+
+        public async Task FetchBirthdays() {
+            try {
+                var birthdays = await birthdayService.GetBirthdays();
+                ClosestBirthDay = birthdays[0];
+                FutureBirthdays = new ObservableCollection<Person>(birthdays.Skip(1));
+            } catch (Exception) {
+                // TODO: Do some error handling
+            }
+        }
+    }
+}
+```
+
+And to fetch birthdays every time `BirthdaysPage` comes into view, change `BirthdaysPage.xaml.cs` to:
+
+```csharp
+using Birthdays.ViewModels;
+using Xamarin.Forms;
+
+namespace Birthdays.Views {
+    public partial class BirthdaysPage : ContentPage {
+        readonly BirthdaysViewModel birthdaysViewModel;
+
+        public BirthdaysPage() {
+            InitializeComponent();
+            BindingContext = birthdaysViewModel = new BirthdaysViewModel();
+        }
+
+        protected async override void OnAppearing() {
+            base.OnAppearing();
+            await birthdaysViewModel.FetchBirthdays();
+        }
+    }
+}
+```
+
+And no data should be shown on screen.
+
+### Key takeaway
+
+`JSON` and `HTTP` is the universal language of online services. `Postman` can be used to explore APIs. `HttpClient` the C# way of making HTTP-request, `Newtonsoft.Json` is the most used JSON-parser. `async` and `await` is the best thing since slices bread. `async void` is an anti-pattern and usage should be kept to a minimum. One piece is cleary missing from the data binding puzzle.
+

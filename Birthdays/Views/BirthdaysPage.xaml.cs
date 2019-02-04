@@ -3,9 +3,16 @@ using Xamarin.Forms;
 
 namespace Birthdays.Views {
     public partial class BirthdaysPage : ContentPage {
+        readonly BirthdaysViewModel birthdaysViewModel;
+
         public BirthdaysPage() {
             InitializeComponent();
-            BindingContext = new BirthdaysViewModel();
+            BindingContext = birthdaysViewModel = new BirthdaysViewModel();
+        }
+
+        protected async override void OnAppearing() {
+            base.OnAppearing();
+            await birthdaysViewModel.FetchBirthdays();
         }
     }
 }
