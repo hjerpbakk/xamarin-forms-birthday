@@ -462,3 +462,36 @@ Run the app and everything should work!
 ### Key takeaway
 
 `INotifyPropertyChanged` is your new favourite interface. It binds the MVVM world together and is your bridge from ViewModel to View. Understand how this interface contains the event which makes the UI ask the ViewModel for new information!
+
+## Create a screen to add birthdays
+
+Change `SettingsPage` to:
+
+```xaml
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="Birthdays.Views.SettingsPage" Title="Settings">
+    <ContentPage.Content>
+        <TableView VerticalOptions="FillAndExpand" Intent="Form">
+            <TableRoot>
+                <TableSection Title="Add new birthday">
+                    <EntryCell Label="Name" Placeholder="Name" />
+                    <ViewCell>
+                        <StackLayout Orientation="Horizontal" Padding="15,0,0,0">
+                            <Label Text="Birthdate" VerticalOptions="Center" HorizontalOptions="Start" />
+                            <DatePicker HorizontalOptions="Fill" VerticalOptions="Center" MinimumDate="01/01/1900" MaximumDate="02/06/2019" Date="02/06/2019" />
+                        </StackLayout>
+                    </ViewCell>
+                    <ViewCell>
+                        <Button Text="Save" />
+                    </ViewCell>
+                </TableSection>
+            </TableRoot>
+        </TableView>
+    </ContentPage.Content>
+</ContentPage>
+```
+
+### Key takeaway
+
+A Xamarin Forms `TableView` can be used to create simple forms.
+
