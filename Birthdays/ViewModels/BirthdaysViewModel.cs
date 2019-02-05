@@ -32,6 +32,15 @@ namespace Birthdays.ViewModels {
             }
         }
 
+        public async Task RemoveBirthday(Person person) {
+            try {
+                FutureBirthdays.Remove(person);
+                await birthdayService.DeleteBirthday(person);
+            } catch (Exception) {
+                // TODO: Do some error handling
+            }
+        }
+
         void OnPropertyChanged([CallerMemberName] string propertyName = null) =>
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }

@@ -314,7 +314,7 @@ namespace Birthdays.Services {
             using (var httpClient = new HttpClient {
                 BaseAddress = new Uri("http://178.62.18.75:8081")
             }) {
-                var json = await httpClient.GetStringAsync("api/birthday/trondheim");
+                var json = await httpClient.GetStringAsync("api/birthday/bodø");
                 var birthdays = JsonConvert.DeserializeObject<Birthdays>(json);
                 var persons = birthdays.TodaysBirthdays.Concat(birthdays.NextBirthdays).ToArray();
                 return persons;
@@ -615,7 +615,7 @@ namespace Birthdays.Services {
             using (var httpClient = new HttpClient {
                 BaseAddress = new Uri(BaseAddress)
             }) {
-                var json = await httpClient.GetStringAsync("api/birthday/trondheim/10");
+                var json = await httpClient.GetStringAsync("api/birthday/bodø/10");
                 var birthdays = JsonConvert.DeserializeObject<Birthdays>(json);
                 var persons = birthdays.TodaysBirthdays.Concat(birthdays.NextBirthdays).ToArray();
                 return persons;
@@ -647,7 +647,7 @@ namespace Birthdays.Services {
 
             public string Name { get; }
             public DateTime Date { get; }
-            public string Location { get; } = "Trondheim";
+            public string Location { get; } = "bodø";
         }
     }
 }
@@ -733,3 +733,191 @@ You can now create as many birthdays as you wish.
 ### Key takeaway
 
 Your app's model should be perfect for your need, but again, sometimes you need to tweak the service layer to fit a reality that you have no control over.
+
+## Support deleting birthdays
+
+Expand `Person` to contain the `Id` property needed to support deletion:
+
+```csharp
+using System;
+
+namespace Birthdays.Models {
+    public class Person {
+        public Person(string name, DateTime date, int id) {
+            Name = name;
+            Birthday = date.ToShortDateString();
+            Age = GetAge(date);
+            Id = id;
+        }
+
+        public string Name { get; }
+        public string Birthday { get; }
+        public uint Age { get; }
+        public int Id { get; }
+
+        static uint GetAge(DateTime birthDate) {
+            var now = DateTime.Now;
+            int age = now.Year - birthDate.Year;
+            if (now.Month < birthDate.Month || (now.Month == birthDate.Month && now.Day < birthDate.Day)) {
+                age--;
+            }
+
+            return (uint)age;
+        }
+    }
+}
+```
+
+This will break the app as the save functionality knows nothing of Ids. Create a new model class to better support saving and call it the confusing name `Birthday`:
+
+```csharp
+using System;
+
+namespace Birthdays.Models {
+    public class Birthday {
+        public Birthday(string name, DateTime birthdate) {
+            Name = name;
+            Birthdate = birthdate;
+        }
+
+        public string Name { get; }
+        public DateTime Birthdate { get; }
+    }
+}
+```
+
+Update `AdminViewModel` to use `Birthday` instead of Person in the `Save` method.
+
+Utilize `Birthday` in the `BirthdayService` and add support for the deletion operation:
+
+```csharp
+using System;
+using System.Linq;
+using System.Net.Http;
+using System.Text;
+using System.Threading.Tasks;
+using Birthdays.Models;
+using Newtonsoft.Json;
+
+namespace Birthdays.Services {
+    public class BirthdayService {
+        const string BaseAddress = "http://178.62.18.75:8081";
+        const string BirthdayAPI = "api/birthday";
+        const string DefaultLocation = "bodø";
+
+        public async Task<Person[]> GetBirthdays() {
+            using (var httpClient = HttpClientFactory.CreateClient()) {
+                const int MaxResults = 10;
+                var json = await httpClient.GetStringAsync($"{BirthdayAPI}/{DefaultLocation}/{MaxResults}");
+                var birthdays = JsonConvert.DeserializeObject<Birthdays>(json);
+                var persons = birthdays.TodaysBirthdays.Concat(birthdays.NextBirthdays).ToArray();
+                return persons;
+            }
+        }
+
+        public async Task SaveBirthday(Birthday birthday) {
+            using (var httpClient = HttpClientFactory.CreateClient()) {
+                var personWithLocation = new BirthdayWithLocation(birthday);
+                var json = JsonConvert.SerializeObject(personWithLocation);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                var result = await httpClient.PostAsync(BirthdayAPI, content);
+                result.EnsureSuccessStatusCode();
+            }
+        }
+
+        public async Task DeleteBirthday(Person person) {
+            using (var httpClient = HttpClientFactory.CreateClient()) {
+                await httpClient.DeleteAsync($"{BirthdayAPI}/{person.Id}");
+            }
+        }
+
+        class Birthdays {
+            public Person[] TodaysBirthdays { get; set; }
+            public Person[] NextBirthdays { get; set; }
+        }
+
+        class BirthdayWithLocation {
+            readonly Birthday birthday;
+
+            public BirthdayWithLocation(Birthday birthday) {
+                this.birthday = birthday;
+            }
+
+            public string Name { get { return birthday.Name; } }
+            public string Date { get { return birthday.Birthdate.ToShortDateString(); } }
+            public string Location { get { return DefaultLocation; } }
+        }
+
+        static class HttpClientFactory {
+            public static HttpClient CreateClient()
+                => new HttpClient {
+                    BaseAddress = new Uri(BaseAddress)
+                };
+        }
+    }
+}
+```
+
+To add support for deletion in `BirthdaysViewModel`, add the followwing method:
+
+```csharp
+public async Task RemoveBirthday(Person person) {
+    try {
+        FutureBirthdays.Remove(person);
+        await birthdayService.DeleteBirthday(person);
+    } catch (Exception) {
+        // TODO: Do some error handling
+    }
+}
+```
+
+Add support for delete context action in `BirthdaysView`, aka swipe to delete on iOS:
+
+```xaml
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentView xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="Birthdays.Views.BirthdaysView">
+    <ContentView.Content>
+        <ListView ItemsSource="{Binding FutureBirthdays}">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <TextCell Text="{Binding Name}" Detail="{Binding Birthday}">
+                        <TextCell.ContextActions>
+                            <MenuItem Clicked="OnDelete" CommandParameter="{Binding .}" Text="Delete" IsDestructive="True" />
+                        </TextCell.ContextActions>
+                    </TextCell>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+    </ContentView.Content>
+</ContentView>
+```
+
+Finally, since this functionality in Xamarin Forms has no binding support out of the box, we need to manually notify the view model of the wanted delition. `BirthdaysView.xaml.cs` thus looks like this:
+
+```csharp
+using System;
+using Birthdays.Models;
+using Birthdays.ViewModels;
+using Xamarin.Forms;
+
+namespace Birthdays.Views {
+    public partial class BirthdaysView : ContentView {
+        public BirthdaysView() {
+            InitializeComponent();
+        }
+
+        public async void OnDelete(object sender, EventArgs e) {
+            var menuItem = (MenuItem)sender;
+            var person = (Person)menuItem.CommandParameter;
+            var birthdaysViewModel = (BirthdaysViewModel)BindingContext;
+            await birthdaysViewModel.RemoveBirthday(person);
+        }
+    }
+}
+```
+
+Phew.
+
+### Key takeaway
+
+A design is good if existing code needs small to no changes in order to add new functionality. If you repeat yourself too much, or the code doesn't express its intent clearly, take a breather to refactor. Refactoring prevents code-rot.

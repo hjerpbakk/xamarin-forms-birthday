@@ -4,7 +4,11 @@
         <ListView ItemsSource="{Binding FutureBirthdays}">
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <TextCell Text="{Binding Name}" Detail="{Binding Birthday}" />
+                    <TextCell Text="{Binding Name}" Detail="{Binding Birthday}">
+                        <TextCell.ContextActions>
+                            <MenuItem Clicked="OnDelete" CommandParameter="{Binding .}" Text="Delete" IsDestructive="True" />
+                        </TextCell.ContextActions>
+                    </TextCell>
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>

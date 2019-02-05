@@ -53,11 +53,11 @@ namespace Birthdays.ViewModels {
         async Task Save() {
             try {
                 ShowButton = false;
-                var person = new Person(Name, Birthday);
-                await birthdayService.SaveBirthday(person);
+                var newBirthday = new Birthday(Name, Birthday);
+                await birthdayService.SaveBirthday(newBirthday);
                 Name = "";
                 Birthday = DateTime.Today;
-            } catch (Exception e) {
+            } catch (Exception) {
                 // TODO: Error handling
             } finally {
                 ShowButton = true;
