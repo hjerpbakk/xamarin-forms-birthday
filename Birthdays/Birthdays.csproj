@@ -18,6 +18,7 @@
     <Folder Include="Models\" />
     <Folder Include="ViewModels\" />
     <Folder Include="Services\" />
+    <Folder Include="Views\ValueConverters\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Views\MainPage.cs" />

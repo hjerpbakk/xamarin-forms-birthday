@@ -469,29 +469,125 @@ Change `SettingsPage` to:
 
 ```xaml
 <?xml version="1.0" encoding="UTF-8"?>
-<ContentPage xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="Birthdays.Views.SettingsPage" Title="Settings">
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:valueConverters="clr-namespace:Birthdays.Views.ValueConverters" x:Class="Birthdays.Views.SettingsPage" Title="Settings">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <valueConverters:NegateBooleanConverter x:Key="negateBooleanConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
     <ContentPage.Content>
-        <TableView VerticalOptions="FillAndExpand" Intent="Form">
-            <TableRoot>
-                <TableSection Title="Add new birthday">
-                    <EntryCell Label="Name" Placeholder="Name" />
-                    <ViewCell>
-                        <StackLayout Orientation="Horizontal" Padding="15,0,0,0">
-                            <Label Text="Birthdate" VerticalOptions="Center" HorizontalOptions="Start" />
-                            <DatePicker HorizontalOptions="Fill" VerticalOptions="Center" MinimumDate="01/01/1900" MaximumDate="02/06/2019" Date="02/06/2019" />
-                        </StackLayout>
-                    </ViewCell>
-                    <ViewCell>
-                        <Button Text="Save" />
-                    </ViewCell>
-                </TableSection>
-            </TableRoot>
-        </TableView>
+        <StackLayout VerticalOptions="Center">
+            <Label Text="Add new birthday" FontSize="32" FontAttributes="Bold" Margin="15,30,15,15" />
+            <Grid Margin="15,0,15,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Label Text="Name" VerticalOptions="Center" HorizontalOptions="End" />
+                <Entry Grid.Column="1" Placeholder="Name" Text="{Binding Name}" VerticalOptions="Center" />
+                <Label Grid.Row="1" Text="Birthday" VerticalOptions="Center" HorizontalOptions="End" />
+                <DatePicker Grid.Row="1" Grid.Column="1" MinimumDate="01/01/1900" MaximumDate="{Binding Today}" Date="{Binding Birthday}" VerticalOptions="Center" />
+            </Grid>
+            <ActivityIndicator HeightRequest="50" IsRunning="true" IsVisible="{Binding ShowButton, Converter={StaticResource negateBooleanConverter}}}" />
+            <Button HeightRequest="50" Text="Save" Command="{Binding SaveCommand}" IsVisible="{Binding ShowButton}" />
+        </StackLayout>
     </ContentPage.Content>
 </ContentPage>
 ```
 
 ### Key takeaway
 
-A Xamarin Forms `TableView` can be used to create simple forms.
+Different layout options can be combined to get the desired view. Use a `ValueConverter` to change how a value is interpreted in XAML.
 
+## Bind the settings view
+
+Create a new ViewModel, `AdminViewModel`:
+
+```csharp
+using System;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
+using Xamarin.Forms;
+
+namespace Birthdays.ViewModels {
+    public class AdminViewModel : INotifyPropertyChanged {
+        string name;
+        DateTime birthday;
+        bool showButton;
+
+        public AdminViewModel() {
+            SaveCommand = new Command(async () => await Save(), () => !string.IsNullOrEmpty(Name));
+            Today = Birthday = DateTime.Today;
+            ShowButton = true;
+        }
+
+        public DateTime Today { get; }
+
+        public string Name {
+            get { return name; }
+            set {
+                name = value;
+                OnPropertyChanged();
+                SaveCommand.ChangeCanExecute();
+            }
+        }
+
+        public DateTime Birthday {
+            get { return birthday; }
+            set {
+                birthday = value;
+                OnPropertyChanged();
+                SaveCommand.ChangeCanExecute();
+            }
+        }
+
+        public bool ShowButton {
+            get { return showButton; }
+            set { showButton = value; OnPropertyChanged(); }
+        }
+
+        public Command SaveCommand { get; }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        async Task Save() {
+            try {
+                ShowButton = false;
+                // TODO: Use a real service
+                await Task.Delay(3000);
+                ShowButton = true;
+            } catch (Exception) {
+                // TODO: Error handling
+            }
+        }
+
+        void OnPropertyChanged([CallerMemberName] string propertyName = null) =>
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+}
+```
+
+And bind the view, creating the view model in `SettingsPage.xaml.cs`:
+
+```csharp
+using Birthdays.ViewModels;
+using Xamarin.Forms;
+
+namespace Birthdays.Views {
+    public partial class SettingsPage : ContentPage {
+        public SettingsPage() {
+            InitializeComponent();
+            BindingContext = new AdminViewModel();
+        }
+    }
+}
+```
+
+### Key takeaway
+
+Use commands to bind actions to the view. All commands using external sources must be async. Give visual feedback both during progress and on completion. Disable or hide controls that should not be used at a given time.

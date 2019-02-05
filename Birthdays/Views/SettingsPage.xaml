@@ -1,21 +1,29 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<ContentPage xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="Birthdays.Views.SettingsPage" Title="Settings">
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:valueConverters="clr-namespace:Birthdays.Views.ValueConverters" x:Class="Birthdays.Views.SettingsPage" Title="Settings">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <valueConverters:NegateBooleanConverter x:Key="negateBooleanConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
     <ContentPage.Content>
-        <TableView VerticalOptions="FillAndExpand" Intent="Form">
-            <TableRoot>
-                <TableSection Title="Add new birthday">
-                    <EntryCell Label="Name" Placeholder="Name" />
-                    <ViewCell>
-                        <StackLayout Orientation="Horizontal" Padding="15,0,0,0">
-                            <Label Text="Birthdate" VerticalOptions="Center" HorizontalOptions="Start" />
-                            <DatePicker HorizontalOptions="Fill" VerticalOptions="Center" MinimumDate="01/01/1900" MaximumDate="02/06/2019" Date="02/06/2019" />
-                        </StackLayout>
-                    </ViewCell>
-                    <ViewCell>
-                        <Button Text="Save" />
-                    </ViewCell>
-                </TableSection>
-            </TableRoot>
-        </TableView>
+        <StackLayout VerticalOptions="Center">
+            <Label Text="Add new birthday" FontSize="32" FontAttributes="Bold" Margin="15,30,15,15" />
+            <Grid Margin="15,0,15,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Label Text="Name" VerticalOptions="Center" HorizontalOptions="End" />
+                <Entry Grid.Column="1" Placeholder="Name" Text="{Binding Name}" VerticalOptions="Center" />
+                <Label Grid.Row="1" Text="Birthday" VerticalOptions="Center" HorizontalOptions="End" />
+                <DatePicker Grid.Row="1" Grid.Column="1" MinimumDate="01/01/1900" MaximumDate="{Binding Today}" Date="{Binding Birthday}" VerticalOptions="Center" />
+            </Grid>
+            <ActivityIndicator HeightRequest="50" IsRunning="true" IsVisible="{Binding ShowButton, Converter={StaticResource negateBooleanConverter}}}" />
+            <Button HeightRequest="50" Text="Save" Command="{Binding SaveCommand}" IsVisible="{Binding ShowButton}" />
+        </StackLayout>
     </ContentPage.Content>
 </ContentPage>
