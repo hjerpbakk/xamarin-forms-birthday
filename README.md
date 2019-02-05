@@ -1091,6 +1091,7 @@ This is a good start, but it does not check the property changed notifications a
 
 ```csharp
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.ComponentModel;
 using Xunit;
@@ -1115,8 +1116,8 @@ namespace Tests.Helpers {
         public void VerifyNumberOfNotifications(int expected)
             => Assert.Equal(expected, notifications.Count);
 
-        public void VerifyNotificationOfName(string propertyName)
-            => Assert.Contains(propertyName, notifications);
+        public void VerifyNotificationOfName(string propertyName, int times = 1)
+            => Assert.Equal(times, notifications.Count(p => propertyName == p));
     }
 }
 ```
@@ -1151,3 +1152,224 @@ namespace Tests {
 ### Key takeaway
 
 MVVM is a really testable pattern and unit tests can help you verify even your UI.
+
+## Dependency Injection
+
+This naive test still has one fatal flaw: we use the production service in our tests! To remedy this, we can create a simple mock and avoiding the network call altogether.
+
+Start with creating an interface for the service, `IBirthdayService`:
+
+```csharp
+using System.Threading.Tasks;
+using Birthdays.Models;
+
+namespace Birthdays.Services {
+    public interface IBirthdayService {
+        Task<Person[]> GetBirthdays();
+        Task SaveBirthday(Birthday birthday);
+        Task DeleteBirthday(Person person);
+    }
+}
+```
+
+`BirthdayService` needs to implement it:
+
+```csharp
+...
+public class BirthdayService : IBirthdayService {
+...
+```
+
+Use depency injection to inject `BirthdayService` using the constructor in `BirthdaysViewModel`: 
+
+```csharp
+...
+readonly IBirthdayService birthdayService;
+
+public BirthdaysViewModel(IBirthdayService birthdayService) {
+    this.birthdayService = birthdayService;
+}
+...
+```
+
+Update `BirthdaysPage.xaml.cs` to create `BirthdayService`:
+
+```csharp
+...
+BindingContext = birthdaysViewModel = new BirthdaysViewModel(new BirthdayService());
+...
+```
+
+Create the stub and do the same in the tests:
+
+```csharp
+using System;
+using System.Threading.Tasks;
+using Birthdays.Models;
+using Birthdays.Services;
+using Birthdays.ViewModels;
+using Tests.Helpers;
+using Xunit;
+
+namespace Tests {
+    public class BirthdaysViewModelTests {
+        [Fact]
+        public async Task FetchBirthdays() {
+            var birthdayViewModel = new BirthdaysViewModel(new BirthdayServiceFake());
+            using (var propertyChangedTracker = new PropertyChangeTracker(birthdayViewModel)) {
+                await birthdayViewModel.FetchBirthdays();
+
+                Assert.NotNull(birthdayViewModel.ClosestBirthDay);
+                Assert.True(birthdayViewModel.FutureBirthdays.Count > 0);
+                propertyChangedTracker.VerifyNumberOfNotifications(2);
+                propertyChangedTracker.VerifyNotificationOfName("ClosestBirthDay");
+                propertyChangedTracker.VerifyNotificationOfName("FutureBirthdays");
+            }
+        }
+
+        class BirthdayServiceFake : IBirthdayService {
+            public Task DeleteBirthday(Person person) {
+                throw new System.NotImplementedException();
+            }
+
+            public Task<Person[]> GetBirthdays() {
+                return Task.FromResult(new[] {
+                    new Person("Runar", new DateTime(1983, 9, 8), 1),
+                    new Person("Anders", new DateTime(1960, 12, 24), 2)
+                });
+            }
+
+            public Task SaveBirthday(Birthday birthday) {
+                throw new System.NotImplementedException();
+            }
+        }
+    }
+}
+```
+
+### Key takeaway
+
+Use dependency inject to control your dependencies. ViewModel contains logic for the view and should be tested thusly.
+
+## Adding an integrated test
+
+Services should be tested using an integrated test, using the real implementation. These tests will be slower and more vulnerable, but are invaluable to ensure correctness and to detect breaking changes. 
+
+Update `BirthdayService` to take the location as a parameter. We'll use this to create a list just for the tests. *bodø* is still default.
+
+```csharp
+using System;
+using System.Linq;
+using System.Net.Http;
+using System.Text;
+using System.Threading.Tasks;
+using Birthdays.Models;
+using Newtonsoft.Json;
+
+namespace Birthdays.Services {
+    public class BirthdayService : IBirthdayService {
+        const string BaseAddress = "http://178.62.18.75:8081";
+        const string BirthdayAPI = "api/birthday";
+
+        readonly string location;
+
+        public BirthdayService(string location = "bodø") {
+            this.location = location;
+        }
+
+        public async Task<Person[]> GetBirthdays() {
+            using (var httpClient = HttpClientFactory.CreateClient()) {
+                const int MaxResults = 10;
+                var json = await httpClient.GetStringAsync($"{BirthdayAPI}/{location}/{MaxResults}");
+                var birthdays = JsonConvert.DeserializeObject<Birthdays>(json);
+                var persons = birthdays.TodaysBirthdays.Concat(birthdays.NextBirthdays).ToArray();
+                return persons;
+            }
+        }
+
+        public async Task SaveBirthday(Birthday birthday) {
+            using (var httpClient = HttpClientFactory.CreateClient()) {
+                var personWithLocation = new BirthdayWithLocation(birthday, location);
+                var json = JsonConvert.SerializeObject(personWithLocation);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                var result = await httpClient.PostAsync(BirthdayAPI, content);
+                result.EnsureSuccessStatusCode();
+            }
+        }
+
+        public async Task DeleteBirthday(Person person) {
+            using (var httpClient = HttpClientFactory.CreateClient()) {
+                await httpClient.DeleteAsync($"{BirthdayAPI}/{person.Id}");
+            }
+        }
+
+        class Birthdays {
+            public Person[] TodaysBirthdays { get; set; }
+            public Person[] NextBirthdays { get; set; }
+        }
+
+        class BirthdayWithLocation {
+            readonly Birthday birthday;
+            readonly string location;
+
+            public BirthdayWithLocation(Birthday birthday, string location) {
+                this.birthday = birthday;
+                this.location = location;
+            }
+
+            public string Name { get { return birthday.Name; } }
+            public string Date { get { return birthday.Birthdate.ToShortDateString(); } }
+            public string Location { get { return location; } }
+        }
+
+        static class HttpClientFactory {
+            public static HttpClient CreateClient()
+                => new HttpClient {
+                    BaseAddress = new Uri(BaseAddress)
+                };
+        }
+    }
+}
+```
+
+Create `BirthdayServiceTests`:
+
+```csharp
+using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Birthdays.Models;
+using Birthdays.Services;
+using Xunit;
+
+namespace Tests {
+    public class BirthdayServiceTests {
+        [Fact]
+        public async Task VerifyBirthdayService() {
+            var uniqueLocation = Guid.NewGuid().ToString("N");
+            var birthdayService = new BirthdayService(uniqueLocation);
+
+            var birthdate = DateTime.Today + TimeSpan.FromDays(1);
+            var uniqueName = Guid.NewGuid().ToString("N");
+            var birthday = new Birthday(uniqueName, birthdate);
+
+            await birthdayService.SaveBirthday(birthday);
+
+            var persons = await birthdayService.GetBirthdays();
+
+            Assert.True(persons.Any());
+            Assert.Equal(birthday.Name, persons[0].Name);
+
+            await birthdayService.DeleteBirthday(persons[0]);
+
+            persons = await birthdayService.GetBirthdays();
+
+            Assert.False(persons.Any());
+        }
+    }
+}
+```
+
+### Key takeaway
+
+Use integrated tests where necessary. Do not repeat logic from unit tests. Remember to clean up after each test.

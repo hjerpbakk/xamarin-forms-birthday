@@ -9,10 +9,10 @@ using System.Runtime.CompilerServices;
 
 namespace Birthdays.ViewModels {
     public class BirthdaysViewModel : INotifyPropertyChanged {
-        readonly BirthdayService birthdayService;
+        readonly IBirthdayService birthdayService;
 
-        public BirthdaysViewModel() {
-            birthdayService = new BirthdayService();
+        public BirthdaysViewModel(IBirthdayService birthdayService) {
+            this.birthdayService = birthdayService;
         }
 
         public Person ClosestBirthDay { get; private set; }

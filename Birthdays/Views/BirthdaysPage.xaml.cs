@@ -1,4 +1,5 @@
-﻿using Birthdays.ViewModels;
+﻿using Birthdays.Services;
+using Birthdays.ViewModels;
 using Xamarin.Forms;
 
 namespace Birthdays.Views {
@@ -7,7 +8,7 @@ namespace Birthdays.Views {
 
         public BirthdaysPage() {
             InitializeComponent();
-            BindingContext = birthdaysViewModel = new BirthdaysViewModel();
+            BindingContext = birthdaysViewModel = new BirthdaysViewModel(new BirthdayService());
         }
 
         protected async override void OnAppearing() {
