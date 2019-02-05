@@ -312,7 +312,7 @@ namespace Birthdays.Services {
     public class BirthdayService {
         public async Task<Person[]> GetBirthdays() {
             using (var httpClient = new HttpClient {
-                BaseAddress = new Uri("http://vt-ekvtool1:8081")
+                BaseAddress = new Uri("http://178.62.18.75:8081")
             }) {
                 var json = await httpClient.GetStringAsync("api/birthday/trondheim");
                 var birthdays = JsonConvert.DeserializeObject<Birthdays>(json);
@@ -335,7 +335,7 @@ Since the service doesn't use HTTPS, iOS at least will block the connection. We 
 <dict>
     <key>NSExceptionDomains</key>
     <dict>
-        <key>vt-ekvtool1</key>
+        <key>178.62.18.75</key>
         <dict>
             <key>NSIncludesSubdomains</key>
             <true/>
@@ -591,3 +591,145 @@ namespace Birthdays.Views {
 ### Key takeaway
 
 Use commands to bind actions to the view. All commands using external sources must be async. Give visual feedback both during progress and on completion. Disable or hide controls that should not be used at a given time.
+
+## Use a real service
+
+Check Swagger for the required format and try it using Postman before implementing the API.
+
+The update the `BirthdayService`, it should look like this now:
+
+```csharp
+using System;
+using System.Linq;
+using System.Net.Http;
+using System.Text;
+using System.Threading.Tasks;
+using Birthdays.Models;
+using Newtonsoft.Json;
+
+namespace Birthdays.Services {
+    public class BirthdayService {
+        const string BaseAddress = "http://178.62.18.75:8081";
+
+        public async Task<Person[]> GetBirthdays() {
+            using (var httpClient = new HttpClient {
+                BaseAddress = new Uri(BaseAddress)
+            }) {
+                var json = await httpClient.GetStringAsync("api/birthday/trondheim/10");
+                var birthdays = JsonConvert.DeserializeObject<Birthdays>(json);
+                var persons = birthdays.TodaysBirthdays.Concat(birthdays.NextBirthdays).ToArray();
+                return persons;
+            }
+        }
+
+        public async Task SaveBirthday(Person person) {
+            using (var httpClient = new HttpClient {
+                BaseAddress = new Uri(BaseAddress)
+            }) {
+                var personWithLocation = new PersonWithLocation(person);
+                var json = JsonConvert.SerializeObject(personWithLocation);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                var result = await httpClient.PostAsync("api/birthday", content);
+                result.EnsureSuccessStatusCode();
+            }
+        }
+
+        class Birthdays {
+            public Person[] TodaysBirthdays { get; set; }
+            public Person[] NextBirthdays { get; set; }
+        }
+
+        class PersonWithLocation {
+            public PersonWithLocation(Person person) {
+                Name = person.Name;
+                Date = DateTime.Parse(person.Birthday);
+            }
+
+            public string Name { get; }
+            public DateTime Date { get; }
+            public string Location { get; } = "Trondheim";
+        }
+    }
+}
+```
+
+Then use the service in the view model:
+
+```csharp
+using System;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
+using Birthdays.Models;
+using Birthdays.Services;
+using Xamarin.Forms;
+
+namespace Birthdays.ViewModels {
+    public class AdminViewModel : INotifyPropertyChanged {
+        readonly BirthdayService birthdayService;
+
+        string name;
+        DateTime birthday;
+        bool showButton;
+
+        public AdminViewModel() {
+            birthdayService = new BirthdayService();
+            SaveCommand = new Command(async () => await Save(), () => !string.IsNullOrEmpty(Name));
+            Today = Birthday = DateTime.Today;
+            ShowButton = true;
+        }
+
+        public DateTime Today { get; }
+
+        public string Name {
+            get { return name; }
+            set {
+                name = value;
+                OnPropertyChanged();
+                SaveCommand.ChangeCanExecute();
+            }
+        }
+
+        public DateTime Birthday {
+            get { return birthday; }
+            set {
+                birthday = value;
+                OnPropertyChanged();
+                SaveCommand.ChangeCanExecute();
+            }
+        }
+
+        public bool ShowButton {
+            get { return showButton; }
+            set { showButton = value; OnPropertyChanged(); }
+        }
+
+        public Command SaveCommand { get; }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        async Task Save() {
+            try {
+                ShowButton = false;
+                var person = new Person(Name, Birthday);
+                await birthdayService.SaveBirthday(person);
+                Name = "";
+                Birthday = DateTime.Today;
+            } catch (Exception e) {
+                // TODO: Error handling
+            } finally {
+                ShowButton = true;
+            }
+        }
+
+        void OnPropertyChanged([CallerMemberName] string propertyName = null) =>
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+}
+```
+
+You can now create as many birthdays as you wish.
+
+### Key takeaway
+
+Your app's model should be perfect for your need, but again, sometimes you need to tweak the service layer to fit a reality that you have no control over.

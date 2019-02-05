@@ -2,15 +2,20 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Birthdays.Models;
+using Birthdays.Services;
 using Xamarin.Forms;
 
 namespace Birthdays.ViewModels {
     public class AdminViewModel : INotifyPropertyChanged {
+        readonly BirthdayService birthdayService;
+
         string name;
         DateTime birthday;
         bool showButton;
 
         public AdminViewModel() {
+            birthdayService = new BirthdayService();
             SaveCommand = new Command(async () => await Save(), () => !string.IsNullOrEmpty(Name));
             Today = Birthday = DateTime.Today;
             ShowButton = true;
@@ -48,11 +53,14 @@ namespace Birthdays.ViewModels {
         async Task Save() {
             try {
                 ShowButton = false;
-                // TODO: Use a real service
-                await Task.Delay(3000);
-                ShowButton = true;
-            } catch (Exception) {
+                var person = new Person(Name, Birthday);
+                await birthdayService.SaveBirthday(person);
+                Name = "";
+                Birthday = DateTime.Today;
+            } catch (Exception e) {
                 // TODO: Error handling
+            } finally {
+                ShowButton = true;
             }
         }
 
