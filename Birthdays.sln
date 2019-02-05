@@ -5,6 +5,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Birthdays.iOS", "Birthdays.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Birthdays", "Birthdays\Birthdays.csproj", "{94C3F95E-D8D1-4378-92B1-8833B97E66F4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{02471DCB-09DF-4040-8F07-B8280B5917BC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|iPhoneSimulator = Debug|iPhoneSimulator
@@ -49,5 +51,21 @@ Global
 		{94C3F95E-D8D1-4378-92B1-8833B97E66F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{94C3F95E-D8D1-4378-92B1-8833B97E66F4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{94C3F95E-D8D1-4378-92B1-8833B97E66F4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{02471DCB-09DF-4040-8F07-B8280B5917BC}.Debug|iPhoneSimulator.ActiveCfg = Debug|Any CPU
+		{02471DCB-09DF-4040-8F07-B8280B5917BC}.Debug|iPhoneSimulator.Build.0 = Debug|Any CPU
+		{02471DCB-09DF-4040-8F07-B8280B5917BC}.Release|iPhoneSimulator.ActiveCfg = Release|Any CPU
+		{02471DCB-09DF-4040-8F07-B8280B5917BC}.Release|iPhoneSimulator.Build.0 = Release|Any CPU
+		{02471DCB-09DF-4040-8F07-B8280B5917BC}.Debug|iPhone.ActiveCfg = Debug|Any CPU
+		{02471DCB-09DF-4040-8F07-B8280B5917BC}.Debug|iPhone.Build.0 = Debug|Any CPU
+		{02471DCB-09DF-4040-8F07-B8280B5917BC}.Release|iPhone.ActiveCfg = Release|Any CPU
+		{02471DCB-09DF-4040-8F07-B8280B5917BC}.Release|iPhone.Build.0 = Release|Any CPU
+		{02471DCB-09DF-4040-8F07-B8280B5917BC}.Ad-Hoc|iPhone.ActiveCfg = Release|Any CPU
+		{02471DCB-09DF-4040-8F07-B8280B5917BC}.Ad-Hoc|iPhone.Build.0 = Release|Any CPU
+		{02471DCB-09DF-4040-8F07-B8280B5917BC}.AppStore|iPhone.ActiveCfg = Release|Any CPU
+		{02471DCB-09DF-4040-8F07-B8280B5917BC}.AppStore|iPhone.Build.0 = Release|Any CPU
+		{02471DCB-09DF-4040-8F07-B8280B5917BC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{02471DCB-09DF-4040-8F07-B8280B5917BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{02471DCB-09DF-4040-8F07-B8280B5917BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{02471DCB-09DF-4040-8F07-B8280B5917BC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

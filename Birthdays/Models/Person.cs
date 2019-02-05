@@ -1,4 +1,5 @@
 ﻿using System;
+using Birthdays.Helpers;
 
 namespace Birthdays.Models {
     public class Person {
@@ -15,7 +16,7 @@ namespace Birthdays.Models {
         public int Id { get; }
 
         static uint GetAge(DateTime birthDate) {
-            var now = DateTime.Now;
+            var now = DateTimeProvider.Instance.Now;
             int age = now.Year - birthDate.Year;
             if (now.Month < birthDate.Month || (now.Month == birthDate.Month && now.Day < birthDate.Day)) {
                 age--;

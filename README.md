@@ -921,3 +921,142 @@ Phew.
 ### Key takeaway
 
 A design is good if existing code needs small to no changes in order to add new functionality. If you repeat yourself too much, or the code doesn't express its intent clearly, take a breather to refactor. Refactoring prevents code-rot.
+
+## Adding unit tests
+
+Create a new `xUnit Test Project` named `Tests`.
+
+Update the nuget packages to the latest versions.
+
+Add a reference to the .Net Standard Library of the app, the `Birthdays` project.
+
+Person contains a cryptic `GetAge` method, so this class is a good first case. Rename `UnitTest1` to `PersonTests`, and add a test:
+
+```csharp
+using System;
+using Birthdays.Models;
+using Xunit;
+
+namespace Tests {
+    public class PersonTests {
+        [Fact]
+        public void VerifyPerson() {
+            var birthdate = new DateTime(1983, 9, 8);
+
+            var runar = new Person("Runar", birthdate, 0);
+
+            Assert.Equal("Runar", runar.Name);
+            Assert.Equal(birthdate, DateTime.Parse(runar.Birthday));
+            Assert.Equal((uint)35, runar.Age);
+            Assert.Equal(0, runar.Id);
+        }
+    }
+}
+```
+
+This should run green and increase our confidence that our code is correct.
+
+But the test has one obvious flaw. What happens on 8.9.2019? We've create the yearly failed test. Time needs to be considered an external dependency and treated as such.
+
+We need to create our own `DateTime` static class to control time. From the test, we must change what *Now* means.
+
+Add the following classes, `DateTimeProvider` and `DateTimeProviderContext`, to a `Helpers` folder in the `Birthdays` project:
+
+```csharp
+using System;
+namespace Birthdays.Helpers {
+    public class DateTimeProvider {
+        static Lazy<DateTimeProvider> instance = new Lazy<DateTimeProvider>(() => new DateTimeProvider());
+
+        DateTimeProvider() {
+        }
+
+        public static DateTimeProvider Instance {
+            get { return instance.Value; }
+        }
+
+        Func<DateTime> _defaultCurrentFunction = () => DateTime.UtcNow;
+
+        public DateTime Now {
+            get {
+                return DateTimeProviderContext.Current == null
+                     ? _defaultCurrentFunction.Invoke()
+                     : DateTimeProviderContext.Current.ContextDateTimeNow;
+            }
+        }
+    }
+}
+```
+
+```csharp
+using System;
+using System.Collections;
+using System.Threading;
+
+namespace Birthdays.Helpers {
+    public class DateTimeProviderContext : IDisposable {
+        readonly Stack contextStack = new Stack();
+
+        static ThreadLocal<Stack> ThreadScopeStack = new ThreadLocal<Stack>(() => new Stack());
+
+        public DateTime ContextDateTimeNow;
+
+        public DateTimeProviderContext(DateTime contextDateTimeNow) {
+            ContextDateTimeNow = contextDateTimeNow;
+            ThreadScopeStack.Value.Push(this);
+        }
+
+        public static DateTimeProviderContext Current {
+            get {
+                if (ThreadScopeStack.Value.Count == 0) {
+                    return null;
+                }
+
+                return (DateTimeProviderContext)ThreadScopeStack.Value.Peek();
+            }
+        }
+
+        public void Dispose() => ThreadScopeStack.Value.Pop();
+    }
+}
+```
+
+Use it in `Person`:
+
+```csharp
+...
+var now = DateTimeProvider.Instance.Now;
+...
+```
+
+And in the tests:
+
+```csharp
+using System;
+using Birthdays.Helpers;
+using Birthdays.Models;
+using Xunit;
+
+namespace Tests {
+    public class PersonTests {
+        [Fact]
+        public void VerifyPerson() {
+            var currentDate = new DateTime(2019, 2, 6);
+            using (var context1 = new DateTimeProviderContext(currentDate)) {
+                var birthdate = new DateTime(1983, 9, 8);
+
+                var runar = new Person("Runar", birthdate, 0);
+
+                Assert.Equal("Runar", runar.Name);
+                Assert.Equal(birthdate, DateTime.Parse(runar.Birthday));
+                Assert.Equal((uint)35, runar.Age);
+                Assert.Equal(0, runar.Id);
+            }
+        }
+    }
+}
+```
+
+### Key takeaway
+
+Write unit test for the parts of your app that you need to work. Control for all external factors to make your tests solid. If you write tests after the production code, always verify that the tests will fail for the right reasons.
