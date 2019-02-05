@@ -1060,3 +1060,94 @@ namespace Tests {
 ### Key takeaway
 
 Write unit test for the parts of your app that you need to work. Control for all external factors to make your tests solid. If you write tests after the production code, always verify that the tests will fail for the right reasons.
+
+## Testing a view model
+
+Create `BirthdaysViewModelTests`:
+
+```csharp
+using System.Threading.Tasks;
+using Birthdays.ViewModels;
+using Xunit;
+
+namespace Tests {
+    public class BirthdaysViewModelTests {
+        [Fact]
+        public async Task FetchBirthdays() {
+            var birthdayViewModel = new BirthdaysViewModel();
+
+            await birthdayViewModel.FetchBirthdays();
+
+            Assert.NotNull(birthdayViewModel.ClosestBirthDay);
+            Assert.True(birthdayViewModel.FutureBirthdays.Count > 0);
+        }
+    }
+}
+```
+
+Verify that the test works.
+
+This is a good start, but it does not check the property changed notifications are fired. Let's fix that. Create a `Helper` folder in the test project and add the class `PropertyChangedTracker`.
+
+```csharp
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using Xunit;
+
+namespace Tests.Helpers {
+    public class PropertyChangeTracker : IDisposable {
+        readonly INotifyPropertyChanged changer;
+        readonly List<string> notifications;
+
+        public PropertyChangeTracker(INotifyPropertyChanged changer) {
+            this.changer = changer;
+            notifications = new List<string>();
+            changer.PropertyChanged += Changer_PropertyChanged;
+        }
+
+        void Changer_PropertyChanged(object sender, PropertyChangedEventArgs e)
+            => notifications.Add(e.PropertyName);
+
+        public void Dispose()
+            => changer.PropertyChanged -= Changer_PropertyChanged;
+
+        public void VerifyNumberOfNotifications(int expected)
+            => Assert.Equal(expected, notifications.Count);
+
+        public void VerifyNotificationOfName(string propertyName)
+            => Assert.Contains(propertyName, notifications);
+    }
+}
+```
+
+Use it in the test:
+
+```csharp
+using System.Threading.Tasks;
+using Birthdays.ViewModels;
+using Tests.Helpers;
+using Xunit;
+
+namespace Tests {
+    public class BirthdaysViewModelTests {
+        [Fact]
+        public async Task FetchBirthdays() {
+            var birthdayViewModel = new BirthdaysViewModel();
+            using (var propertyChangedTracker = new PropertyChangeTracker(birthdayViewModel)) {
+                await birthdayViewModel.FetchBirthdays();
+
+                Assert.NotNull(birthdayViewModel.ClosestBirthDay);
+                Assert.True(birthdayViewModel.FutureBirthdays.Count > 0);
+                propertyChangedTracker.VerifyNumberOfNotifications(2);
+                propertyChangedTracker.VerifyNotificationOfName("ClosestBirthDay");
+                propertyChangedTracker.VerifyNotificationOfName("FutureBirthdays");
+            }
+        }
+    }
+}
+```
+
+### Key takeaway
+
+MVVM is a really testable pattern and unit tests can help you verify even your UI.
