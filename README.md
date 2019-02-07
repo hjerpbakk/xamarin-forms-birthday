@@ -3,7 +3,7 @@ Never miss a birthday again! This educational app was created as part of a Xamar
 
 ## Show mock-up of the app to be created
 
-<img src="mockup.png" height="1043" width="942" />
+![](mockup.png)
 
 ### Key takeaway
 
