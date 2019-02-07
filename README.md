@@ -465,6 +465,24 @@ Run the app and everything should work!
 
 ## Create a screen to add birthdays
 
+Create `ValueConverters` folder in the `Views` folder, and add a class `NegateBooleanConverter`: 
+
+```csharp
+using System;
+using System.Globalization;
+using Xamarin.Forms;
+
+namespace Birthdays.Views.ValueConverters {
+    public class NegateBooleanConverter : IValueConverter {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+            => !(bool)value;
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => !(bool)value;
+    }
+}
+```
+
 Change `SettingsPage` to:
 
 ```xaml
