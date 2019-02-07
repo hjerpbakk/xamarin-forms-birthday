@@ -1,5 +1,8 @@
-# xamarin-forms-birthday
-Never miss a birthday again! This educational app was created as part of a Xamarin Forms course.
+# Xamarin Forms Birthday
+
+Never miss a birthday again! This educational app was created as part of a Xamarin Forms workshop. 
+
+https://hjerpbakk.com/blog/2019/02/07/cross-platform-mobile-development-using-csharp-and-xamarin
 
 ## Show mock-up of the app to be created
 
