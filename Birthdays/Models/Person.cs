@@ -1,7 +1,9 @@
 ﻿using System;
 using Birthdays.Helpers;
+using Xamarin.Forms.Internals;
 
 namespace Birthdays.Models {
+    [Preserve(AllMembers = true)]
     public class Person {
         public Person(string name, DateTime date, int id) {
             Name = name;

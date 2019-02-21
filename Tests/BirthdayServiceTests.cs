@@ -10,7 +10,7 @@ namespace Tests {
         [Fact]
         public async Task VerifyBirthdayService() {
             var uniqueLocation = Guid.NewGuid().ToString("N");
-            var birthdayService = new BirthdayService(uniqueLocation);
+            var birthdayService = new BirthdayService(new Location(uniqueLocation));
 
             var birthdate = DateTime.Today + TimeSpan.FromDays(1);
             var uniqueName = Guid.NewGuid().ToString("N");

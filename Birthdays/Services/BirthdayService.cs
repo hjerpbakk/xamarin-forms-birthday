@@ -5,15 +5,17 @@ using System.Text;
 using System.Threading.Tasks;
 using Birthdays.Models;
 using Newtonsoft.Json;
+using Xamarin.Forms.Internals;
 
 namespace Birthdays.Services {
+    [Preserve(AllMembers = true)]
     public class BirthdayService : IBirthdayService {
         const string BaseAddress = "http://178.62.18.75:8081";
         const string BirthdayAPI = "api/birthday";
 
-        readonly string location;
+        readonly Location location;
 
-        public BirthdayService(string location = "bodø") {
+        public BirthdayService(Location location) {
             this.location = location;
         }
 
@@ -29,7 +31,7 @@ namespace Birthdays.Services {
 
         public async Task SaveBirthday(Birthday birthday) {
             using (var httpClient = HttpClientFactory.CreateClient()) {
-                var personWithLocation = new BirthdayWithLocation(birthday, location);
+                var personWithLocation = new BirthdayWithLocation(birthday, location.Name);
                 var json = JsonConvert.SerializeObject(personWithLocation);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
                 var result = await httpClient.PostAsync(BirthdayAPI, content);
@@ -43,11 +45,13 @@ namespace Birthdays.Services {
             }
         }
 
+        [Preserve(AllMembers = true)]
         class Birthdays {
             public Person[] TodaysBirthdays { get; set; }
             public Person[] NextBirthdays { get; set; }
         }
 
+        [Preserve(AllMembers = true)]
         class BirthdayWithLocation {
             readonly Birthday birthday;
             readonly string location;
@@ -62,6 +66,7 @@ namespace Birthdays.Services {
             public string Location { get { return location; } }
         }
 
+        [Preserve(AllMembers = true)]
         static class HttpClientFactory {
             public static HttpClient CreateClient()
                 => new HttpClient {

@@ -6,8 +6,10 @@ using Birthdays.Models;
 using Birthdays.Services;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using Xamarin.Forms.Internals;
 
 namespace Birthdays.ViewModels {
+    [Preserve(AllMembers = true)]
     public class BirthdaysViewModel : INotifyPropertyChanged {
         readonly IBirthdayService birthdayService;
 

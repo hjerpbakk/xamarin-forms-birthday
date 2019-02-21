@@ -3,13 +3,13 @@ using Xamarin.Forms.Internals;
 
 namespace Birthdays.Models {
     [Preserve(AllMembers = true)]
-    public class Birthday {
-        public Birthday(string name, DateTime birthdate) {
+    public class Location {
+        public Location(string name) {
             Name = name;
-            Birthdate = birthdate;
         }
 
         public string Name { get; }
-        public DateTime Birthdate { get; }
+
+        public override string ToString() => Name;
     }
 }

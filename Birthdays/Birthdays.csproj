@@ -12,6 +12,7 @@
   <ItemGroup>
     <PackageReference Include="Xamarin.Forms" Version="3.4.0.1029999" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
+    <PackageReference Include="LightInject" Version="5.4.0" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Views\" />

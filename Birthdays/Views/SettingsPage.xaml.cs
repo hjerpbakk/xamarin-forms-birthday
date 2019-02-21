@@ -1,11 +1,12 @@
 ﻿using Birthdays.ViewModels;
 using Xamarin.Forms;
+using Xamarin.Forms.Internals;
 
 namespace Birthdays.Views {
     public partial class SettingsPage : ContentPage {
-        public SettingsPage() {
+        public SettingsPage(AdminViewModel adminViewModel) {
             InitializeComponent();
-            BindingContext = new AdminViewModel();
+            BindingContext = adminViewModel;
         }
     }
 }
