@@ -29,7 +29,7 @@ namespace Birthdays.ViewModels {
                 FutureBirthdays = new ObservableCollection<Person>(birthdays.Skip(1));
                 OnPropertyChanged(nameof(ClosestBirthDay));
                 OnPropertyChanged(nameof(FutureBirthdays));
-            } catch (Exception) {
+            } catch (Exception e) {
                 // TODO: Do some error handling
             }
         }

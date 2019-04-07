@@ -4,27 +4,28 @@ using System.Threading;
 
 namespace Birthdays.Helpers {
     public class DateTimeProviderContext : IDisposable {
-        readonly Stack contextStack = new Stack();
+        static readonly ThreadLocal<Stack> threadScopedStack;
 
-        static ThreadLocal<Stack> ThreadScopeStack = new ThreadLocal<Stack>(() => new Stack());
-
-        public DateTime ContextDateTimeNow;
+        static DateTimeProviderContext()
+            => threadScopedStack = new ThreadLocal<Stack>(() => new Stack());
 
         public DateTimeProviderContext(DateTime contextDateTimeNow) {
             ContextDateTimeNow = contextDateTimeNow;
-            ThreadScopeStack.Value.Push(this);
+            threadScopedStack.Value.Push(this);
         }
+
+        public DateTime ContextDateTimeNow { get; }
 
         public static DateTimeProviderContext Current {
             get {
-                if (ThreadScopeStack.Value.Count == 0) {
+                if (threadScopedStack.Value.Count == 0) {
                     return null;
                 }
 
-                return (DateTimeProviderContext)ThreadScopeStack.Value.Peek();
+                return (DateTimeProviderContext)threadScopedStack.Value.Peek();
             }
         }
 
-        public void Dispose() => ThreadScopeStack.Value.Pop();
+        public void Dispose() => threadScopedStack.Value.Pop();
     }
 }
