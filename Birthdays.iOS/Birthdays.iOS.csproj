@@ -157,4 +157,8 @@
       <Name>Birthdays</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <BundleResource Include="Resources\birthday%403x.png" />
+    <BundleResource Include="Resources\settings%403x.png" />
+  </ItemGroup>
 </Project>
