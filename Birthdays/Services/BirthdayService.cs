@@ -54,16 +54,15 @@ namespace Birthdays.Services {
         [Preserve(AllMembers = true)]
         class BirthdayWithLocation {
             readonly Birthday birthday;
-            readonly string location;
 
             public BirthdayWithLocation(Birthday birthday, string location) {
                 this.birthday = birthday;
-                this.location = location;
+                Location = location;
             }
 
             public string Name { get { return birthday.Name; } }
             public string Date { get { return birthday.Birthdate.ToShortDateString(); } }
-            public string Location { get { return location; } }
+            public string Location { get; }
         }
 
         [Preserve(AllMembers = true)]

@@ -1394,3 +1394,27 @@ namespace Tests {
 ### Key takeaway
 
 Use integrated tests where necessary. Do not repeat logic from unit tests. Remember to clean up after each test.
+
+## Using an iOS custom renderer to disable selection in lists
+
+Selection is enabled in Xamarin Forms ListViews per default. It's easy to disable this using a custom renderer. Create a new folder `Renderers` in the iOS project add a regular C# class `NoSelectListViewRenderer`. It should look like this:
+
+```csharp
+using Birthdays.iOS.Renderers;
+using Xamarin.Forms;
+using Xamarin.Forms.Platform.iOS;
+
+[assembly: ExportRenderer(typeof(ListView), typeof(NoSelectListViewRenderer))]
+namespace Birthdays.iOS.Renderers {
+    public class NoSelectListViewRenderer : ListViewRenderer {
+        protected override void OnElementChanged(ElementChangedEventArgs<ListView> e) {
+            base.OnElementChanged(e);
+            Control.AllowsSelection = false;
+        }
+    }
+}
+```
+
+### Key takeaway
+
+Use custom renderers per platform to have easy access to native functionality.  When needed, don't overdo it.
